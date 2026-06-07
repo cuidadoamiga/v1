@@ -26,8 +26,20 @@ export default function Footer() {
             >
               cuidadoamiga
             </span>
-            <p style={{ fontSize: 13, lineHeight: 1.6, maxWidth: 340 }}>
+            <p style={{ fontSize: 13, lineHeight: 1.6, maxWidth: 340, marginBottom: 10 }}>
               Proyecto de código abierto. Los datos son responsabilidad de las moderadoras verificadas.
+            </p>
+            <p style={{
+              fontSize: 12,
+              lineHeight: 1.6,
+              maxWidth: 340,
+              background: '#9333ea18',
+              border: '1px solid #9333ea33',
+              color: '#c084fc',
+              borderRadius: 8,
+              padding: '8px 12px',
+            }}>
+              No vendemos ni monetizamos ningún dato personal. La información publicada proviene de fuentes públicas verificadas.
             </p>
           </div>
 

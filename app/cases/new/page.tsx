@@ -74,6 +74,7 @@ export default function NewCasePage() {
       fecha: form.fecha,
       tipo: form.tipo,
       pais: form.pais,
+      ciudad: form.ciudad || null,
       descripcion: form.descripcion,
       foto_url: form.foto_url || null,
       fuentes,

@@ -64,6 +64,8 @@ export default function HomePage() {
   const [pendingTypes, setPendingTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
   const [selectedCountry, setSelectedCountry] = useState('')
   const [pendingCountry, setPendingCountry] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
+  const [pendingCity, setPendingCity] = useState('')
   const [loading, setLoading] = useState(true)
   const [usingDemo, setUsingDemo] = useState(false)
 
@@ -97,15 +99,15 @@ export default function HomePage() {
 
   useEffect(() => {
     let result = cases.filter((c) => selectedTypes.includes(c.tipo))
-    if (selectedCountry) {
-      result = result.filter((c) => c.pais === selectedCountry)
-    }
+    if (selectedCountry) result = result.filter((c) => c.pais === selectedCountry)
+    if (selectedCity) result = result.filter((c) => c.ciudad?.toLowerCase().includes(selectedCity.toLowerCase()))
     setFiltered(result)
-  }, [cases, selectedTypes, selectedCountry])
+  }, [cases, selectedTypes, selectedCountry, selectedCity])
 
   function handleSearch() {
     setSelectedTypes(pendingTypes)
     setSelectedCountry(pendingCountry)
+    setSelectedCity(pendingCity)
   }
 
   return (
@@ -136,8 +138,10 @@ export default function HomePage() {
             <Filters
               selectedTypes={pendingTypes}
               selectedCountry={pendingCountry}
+              selectedCity={pendingCity}
               onTypeChange={setPendingTypes}
               onCountryChange={setPendingCountry}
+              onCityChange={setPendingCity}
               onSearch={handleSearch}
             />
             <p style={{ color: 'var(--text-secondary)' }} className="text-xs mt-3 px-1">

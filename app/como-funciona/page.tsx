@@ -141,6 +141,14 @@ export default function ComoFuncionaPage() {
             </Section>
           </div>
 
+          <div style={{ background: '#9333ea18', border: '1px solid #9333ea33', borderRadius: 16, padding: '28px 32px' }}>
+            <Section title="Privacidad y datos">
+              <p style={{ color: '#e2e8f0', fontSize: 15, lineHeight: 1.7, margin: 0 }}>
+                No vendemos ni monetizamos ningún dato personal. Toda la información publicada en el mapa proviene de fuentes públicas verificadas. No almacenamos datos de quienes reportan casos más allá de lo necesario para el proceso de moderación.
+              </p>
+            </Section>
+          </div>
+
           <div style={{ background: '#1a1a24', border: '1px solid #2a2a3a', borderRadius: 16, padding: '28px 32px' }}>
             <Section title="¿Qué pasa si un caso tiene un error?">
               <p style={{ color: '#e2e8f0', fontSize: 15, lineHeight: 1.7, margin: 0 }}>

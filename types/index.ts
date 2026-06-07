@@ -8,6 +8,7 @@ export interface Case {
   fecha: string
   tipo: CaseType
   pais: string
+  ciudad: string | null
   descripcion: string
   foto_url: string | null
   fuentes: string[]

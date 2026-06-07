@@ -1,12 +1,14 @@
 'use client'
 
-import { CaseType, COUNTRIES, CountryCode } from '@/types'
+import { CaseType, COUNTRIES } from '@/types'
 
 interface FiltersProps {
   selectedTypes: CaseType[]
   selectedCountry: string
+  selectedCity: string
   onTypeChange: (types: CaseType[]) => void
   onCountryChange: (country: string) => void
+  onCityChange: (city: string) => void
   onSearch: () => void
 }
 
@@ -19,8 +21,10 @@ const TYPES: { value: CaseType; label: string; color: string }[] = [
 export default function Filters({
   selectedTypes,
   selectedCountry,
+  selectedCity,
   onTypeChange,
   onCountryChange,
+  onCityChange,
   onSearch,
 }: FiltersProps) {
   function toggleType(type: CaseType) {
@@ -33,10 +37,7 @@ export default function Filters({
 
   return (
     <div
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-      }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       className="rounded-xl p-4 flex flex-col gap-3"
     >
       <span style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wider">
@@ -65,29 +66,36 @@ export default function Filters({
 
       <select
         value={selectedCountry}
-        onChange={(e) => onCountryChange(e.target.value)}
-        style={{
-          background: 'var(--bg-primary)',
-          border: '1px solid var(--border)',
-          color: 'var(--text-primary)',
-        }}
+        onChange={(e) => { onCountryChange(e.target.value); onCityChange('') }}
+        style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
         className="text-sm rounded-lg px-3 py-2 outline-none cursor-pointer w-full"
       >
         <option value="">Todos los países</option>
         {Object.entries(COUNTRIES).map(([code, name]) => (
-          <option key={code} value={code}>
-            {name}
-          </option>
+          <option key={code} value={name}>{name}</option>
         ))}
       </select>
 
+      <input
+        type="text"
+        placeholder="Ciudad (ej: Buenos Aires)"
+        value={selectedCity}
+        onChange={(e) => onCityChange(e.target.value)}
+        style={{
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-primary)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          fontSize: 14,
+          outline: 'none',
+          width: '100%',
+        }}
+      />
+
       <button
         onClick={onSearch}
-        style={{
-          background: 'linear-gradient(135deg, var(--rose), var(--pink))',
-          color: 'white',
-          border: 'none',
-        }}
+        style={{ background: 'linear-gradient(135deg, var(--rose), var(--pink))', color: 'white', border: 'none' }}
         className="w-full py-2 rounded-lg text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity"
       >
         Buscar
