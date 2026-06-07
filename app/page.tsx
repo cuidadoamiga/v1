@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
 import Filters from '@/components/Filters'
 import CaseCard from '@/components/CaseCard'
+import FAQ from '@/components/FAQ'
+import Footer from '@/components/Footer'
 import { Case, CaseType } from '@/types'
 import { supabase } from '@/lib/supabase'
 
@@ -107,23 +109,20 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
 
       {usingDemo && (
         <div
-          style={{
-            background: '#fef9c3',
-            borderBottom: '1px solid #fde047',
-            color: '#854d0e',
-          }}
+          style={{ background: '#fef9c3', borderBottom: '1px solid #fde047', color: '#854d0e' }}
           className="text-center text-xs py-2 px-4"
         >
           Mostrando datos de demo — configurá Supabase en <code>.env.local</code> para ver casos reales
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* Mapa + sidebar — altura fija */}
+      <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
         <aside
           style={{
             background: 'var(--bg-secondary)',
@@ -149,17 +148,11 @@ export default function HomePage() {
           <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                  className="rounded-xl h-20 animate-pulse"
-                />
+                <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }} className="rounded-xl h-20 animate-pulse" />
               ))
             ) : filtered.length === 0 ? (
               <div className="text-center py-12">
-                <p style={{ color: 'var(--text-secondary)' }} className="text-sm">
-                  No hay casos con los filtros seleccionados
-                </p>
+                <p style={{ color: 'var(--text-secondary)' }} className="text-sm">No hay casos con los filtros seleccionados</p>
               </div>
             ) : (
               filtered.map((c) => <CaseCard key={c.id} c={c} />)
@@ -171,6 +164,10 @@ export default function HomePage() {
           <MapView cases={filtered} />
         </main>
       </div>
+
+      {/* FAQ y Footer con scroll normal */}
+      <FAQ />
+      <Footer />
     </div>
   )
 }

@@ -39,6 +39,13 @@ export default function Navbar() {
             + Reportar caso
           </Link>
           <Link
+            href="/como-funciona"
+            style={{ color: 'var(--text-secondary)' }}
+            className="text-sm hover:text-gray-900 transition-colors"
+          >
+            Cómo funciona
+          </Link>
+          <Link
             href="/unirse"
             style={{ color: 'var(--text-secondary)' }}
             className="text-sm hover:text-gray-900 transition-colors"
