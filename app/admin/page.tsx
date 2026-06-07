@@ -232,6 +232,7 @@ function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
                   <span style={{ color: '#9d8fad' }} className="text-xs">{c.fecha} · {c.pais}</span>
                 </div>
                 <h3 style={{ color: '#f0eaf5' }} className="font-semibold">{c.nombre}</h3>
+                {c.victima && <p style={{ color: '#c084fc', fontSize: 12, marginTop: 2 }}>Víctima: {c.victima}</p>}
                 {c.descripcion && <p style={{ color: '#9d8fad' }} className="text-xs mt-1 line-clamp-2">{c.descripcion}</p>}
               </div>
               <div style={{ background: '#0d0d12', border: '1px solid #2a2a3a', borderRadius: 8, padding: '8px 16px', textAlign: 'center', flexShrink: 0 }}>

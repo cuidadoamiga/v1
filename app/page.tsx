@@ -16,6 +16,7 @@ const DEMO_CASES: Case[] = [
   {
     id: '1',
     nombre: 'Caso Demo — Argentina',
+    victima: null,
     fecha: '2024-03-15',
     tipo: 'femicidio',
     pais: 'Argentina',
@@ -31,6 +32,7 @@ const DEMO_CASES: Case[] = [
   {
     id: '2',
     nombre: 'Caso Demo — Brasil',
+    victima: null,
     fecha: '2024-04-02',
     tipo: 'abuso',
     pais: 'Brasil',
@@ -46,6 +48,7 @@ const DEMO_CASES: Case[] = [
   {
     id: '3',
     nombre: 'Caso Demo — México',
+    victima: null,
     fecha: '2024-05-10',
     tipo: 'acoso',
     pais: 'México',

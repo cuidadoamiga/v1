@@ -5,6 +5,7 @@ export type CaseStatus = 'pendiente' | 'aprobado' | 'rechazado'
 export interface Case {
   id: string
   nombre: string
+  victima: string | null
   fecha: string
   tipo: CaseType
   pais: string

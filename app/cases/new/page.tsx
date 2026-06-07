@@ -25,6 +25,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 export default function NewCasePage() {
   const [form, setForm] = useState({
     nombre: '',
+    victima: '',
     fecha: '',
     tipo: 'femicidio',
     pais: '',
@@ -71,6 +72,7 @@ export default function NewCasePage() {
 
     const payload = {
       nombre: form.nombre,
+      victima: form.victima || null,
       fecha: form.fecha,
       tipo: form.tipo,
       pais: form.pais,
@@ -166,6 +168,19 @@ export default function NewCasePage() {
               onChange={(e) => set('nombre', e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Nombre completo de la víctima</label>
+            <input
+              placeholder="Nombre y apellido"
+              style={inputStyle}
+              value={form.victima}
+              onChange={(e) => set('victima', e.target.value)}
+            />
+            <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
+              Opcional. Solo si es información pública.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
