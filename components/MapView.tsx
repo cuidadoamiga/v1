@@ -1,165 +1,133 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
-import { Case, CASE_TYPE_COLORS, CASE_TYPE_LABELS } from '@/types'
+import { useEffect, useRef } from 'react'
+import { Case, CASE_TYPE_LABELS } from '@/types'
 
 interface MapViewProps {
   cases: Case[]
 }
 
-const MAP_STYLES = [
-  { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d0d1a' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#9d8fad' }] },
-  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a2a3a' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a3a' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a2a4a' }] },
-  { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#9d8fad' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1520' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3a4a5a' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#16162a' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1a2a1a' }] },
-]
+const TYPE_COLORS: Record<string, string> = {
+  femicidio: '#e11d48',
+  abuso:     '#f97316',
+  acoso:     '#3b82f6',
+}
+
+function makeIcon(color: string) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22S28 23.33 28 14C28 6.27 21.73 0 14 0z"
+        fill="${color}" stroke="white" stroke-width="2"/>
+      <circle cx="14" cy="14" r="5" fill="white"/>
+    </svg>
+  `
+  return `data:image/svg+xml;base64,${btoa(svg)}`
+}
 
 export default function MapView({ cases }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstance = useRef<google.maps.Map | null>(null)
-  const markersRef = useRef<google.maps.Marker[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const mapInstanceRef = useRef<any>(null)
+  const markersRef = useRef<any[]>([])
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey || apiKey === 'your_google_maps_api_key') {
-      setLoaded(true)
-      return
-    }
+    if (!mapRef.current || mapInstanceRef.current) return
 
-    setOptions({ key: apiKey })
-
-    importLibrary('maps').then(() => {
-      if (!mapRef.current) return
-
-      mapInstance.current = new google.maps.Map(mapRef.current, {
-        center: { lat: -15, lng: -60 },
-        zoom: 3,
-        // @ts-ignore — styles work at runtime with legacy Maps JS API
-        styles: MAP_STYLES,
-        disableDefaultUI: false,
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
+    // Leaflet solo funciona en browser
+    import('leaflet').then((L) => {
+      // Fix default icon paths
+      delete (L.Icon.Default.prototype as any)._getIconUrl
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
-      setLoaded(true)
+      const map = L.map(mapRef.current!, {
+        center: [-15, -65],
+        zoom: 3,
+        zoomControl: true,
+      })
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
+      }).addTo(map)
+
+      mapInstanceRef.current = { map, L }
     })
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.map.remove()
+        mapInstanceRef.current = null
+      }
+    }
   }, [])
 
   useEffect(() => {
-    if (!mapInstance.current || !loaded) return
+    if (!mapInstanceRef.current) return
+    const { map, L } = mapInstanceRef.current
 
-    markersRef.current.forEach((m) => m.setMap(null))
+    markersRef.current.forEach((m) => m.remove())
     markersRef.current = []
 
     cases.forEach((c) => {
-      const color = CASE_TYPE_COLORS[c.tipo]
-
-      const marker = new google.maps.Marker({
-        position: { lat: c.lat, lng: c.lng },
-        map: mapInstance.current!,
-        title: c.nombre,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: color,
-          fillOpacity: 0.9,
-          strokeColor: '#ffffff',
-          strokeWeight: 1.5,
-        },
+      const color = TYPE_COLORS[c.tipo] || '#e11d48'
+      const icon = L.icon({
+        iconUrl: makeIcon(color),
+        iconSize: [28, 36],
+        iconAnchor: [14, 36],
+        popupAnchor: [0, -36],
       })
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div style="
-            background: #1a1a24;
-            color: #f0eaf5;
-            padding: 12px;
-            border-radius: 8px;
-            min-width: 180px;
-            font-family: system-ui, sans-serif;
-          ">
-            <div style="
+      const marker = L.marker([c.lat, c.lng], { icon })
+        .addTo(map)
+        .bindPopup(`
+          <div style="font-family: Inter, system-ui, sans-serif; min-width: 160px; padding: 4px;">
+            <span style="
               display: inline-block;
               background: ${color}22;
               color: ${color};
+              border: 1px solid ${color}66;
               font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
               padding: 2px 8px;
               border-radius: 999px;
-              border: 1px solid ${color};
               margin-bottom: 6px;
-            ">${CASE_TYPE_LABELS[c.tipo]}</div>
-            <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">${c.nombre}</h3>
-            <p style="margin: 0 0 8px; font-size: 12px; color: #9d8fad;">${c.fecha} · ${c.pais}</p>
+            ">${CASE_TYPE_LABELS[c.tipo]}</span>
+            <div style="font-weight: 700; font-size: 14px; color: #1a202c; margin-bottom: 3px;">${c.nombre}</div>
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${c.fecha} · ${c.pais}</div>
             <a href="/cases/${c.id}" style="
-              color: #ec4899;
+              color: ${color};
               font-size: 12px;
+              font-weight: 600;
               text-decoration: none;
-              font-weight: 500;
             ">Ver ficha completa →</a>
           </div>
-        `,
-      })
-
-      marker.addListener('click', () => {
-        infoWindow.open(mapInstance.current!, marker)
-      })
+        `)
 
       markersRef.current.push(marker)
     })
-  }, [cases, loaded])
+  }, [cases])
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
-  if (!apiKey || apiKey === 'your_google_maps_api_key') {
-    return (
-      <div
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-        className="w-full h-full rounded-2xl flex flex-col items-center justify-center gap-3"
-      >
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #e11d48, #9333ea)',
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <span className="text-white text-2xl">🗺</span>
-        </div>
-        <p style={{ color: 'var(--text-secondary)' }} className="text-sm text-center px-6">
-          Configurá <strong style={{ color: 'var(--pink)' }}>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</strong> en{' '}
-          <code
-            style={{
-              background: 'var(--bg-secondary)',
-              padding: '2px 6px',
-              borderRadius: 4,
-              fontSize: 12,
-            }}
-          >
-            .env.local
-          </code>{' '}
-          para ver el mapa
-        </p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
-          {cases.length} casos listos para mostrar
-        </p>
-      </div>
-    )
-  }
-
-  return <div ref={mapRef} className="w-full h-full rounded-2xl overflow-hidden" />
+  return (
+    <>
+      <style>{`
+        .leaflet-container { border-radius: 12px; }
+        .leaflet-popup-content-wrapper {
+          border-radius: 10px !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important;
+          border: 1px solid #e2e8f0 !important;
+        }
+        .leaflet-popup-tip { background: white !important; }
+      `}</style>
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      />
+      <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: 12 }} />
+    </>
+  )
 }

@@ -5,20 +5,21 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { COUNTRIES } from '@/types'
 
-function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
-  // Formato: @lat,lng o ?q=lat,lng o /place/.../lat,lng
-  const patterns = [
-    /@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-    /[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-    /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
-  ]
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match) {
-      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) }
+async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const encoded = encodeURIComponent(address)
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
+      { headers: { 'Accept-Language': 'es' } }
+    )
+    const data = await res.json()
+    if (data && data[0]) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
     }
+    return null
+  } catch {
+    return null
   }
-  return null
 }
 
 export default function NewCasePage() {
@@ -30,26 +31,35 @@ export default function NewCasePage() {
     descripcion: '',
     foto_url: '',
     fuentes: '',
-    maps_url: '',
+    calle: '',
+    numero: '',
+    barrio: '',
+    ciudad: '',
+    cp: '',
   })
-  const [mapsError, setMapsError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [geoError, setGeoError] = useState('')
 
   function set(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
-    if (field === 'maps_url') setMapsError('')
+    if (['calle', 'numero', 'barrio', 'ciudad', 'cp'].includes(field)) setGeoError('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setGeoError('')
 
-    const coords = parseGoogleMapsUrl(form.maps_url)
+    const addressParts = [
+      form.calle, form.numero, form.barrio, form.ciudad, form.pais
+    ].filter(Boolean).join(', ')
+
+    const coords = await geocodeAddress(addressParts)
     if (!coords) {
-      setMapsError('No se pudieron extraer coordenadas. Pegá el link completo de Google Maps.')
+      setGeoError('No se pudo ubicar esa dirección. Revisá que la ciudad y el país estén bien escritos.')
       setLoading(false)
       return
     }
@@ -110,9 +120,7 @@ export default function NewCasePage() {
           className="rounded-2xl p-10 max-w-md text-center"
         >
           <div className="text-5xl mb-4">✅</div>
-          <h2 style={{ color: 'var(--text-primary)' }} className="text-xl font-bold mb-2">
-            Caso enviado
-          </h2>
+          <h2 style={{ color: 'var(--text-primary)' }} className="text-xl font-bold mb-2">Caso enviado</h2>
           <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-6">
             El caso fue enviado correctamente y será revisado por el equipo de moderación antes de publicarse.
           </p>
@@ -140,16 +148,16 @@ export default function NewCasePage() {
       </nav>
 
       <main className="max-w-2xl mx-auto px-6 py-12">
-        <h1 style={{ color: 'var(--text-primary)' }} className="text-3xl font-bold mb-2">
-          Reportar un caso
-        </h1>
+        <h1 style={{ color: 'var(--text-primary)' }} className="text-3xl font-bold mb-2">Reportar un caso</h1>
         <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-8">
           Los casos son revisados por el equipo antes de publicarse en el mapa.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+
+          {/* Datos del hecho */}
           <div>
-            <label style={labelStyle}>Nombre completo del perpetrador *</label>
+            <label style={labelStyle}>Nombre completo del agresor *</label>
             <input
               placeholder="Nombre y apellido"
               style={inputStyle}
@@ -179,7 +187,7 @@ export default function NewCasePage() {
             <select style={inputStyle} value={form.pais} onChange={(e) => set('pais', e.target.value)} required>
               <option value="">Seleccioná un país</option>
               {Object.entries(COUNTRIES).map(([code, name]) => (
-                <option key={code} value={code}>{name}</option>
+                <option key={code} value={name}>{name}</option>
               ))}
             </select>
           </div>
@@ -193,24 +201,51 @@ export default function NewCasePage() {
             />
           </div>
 
-          <div>
-            <label style={labelStyle}>Ubicación (link de Google Maps) *</label>
-            <input
-              type="url"
-              placeholder="https://maps.google.com/..."
-              style={{
-                ...inputStyle,
-                borderColor: mapsError ? '#ef4444' : 'var(--border)',
-              }}
-              value={form.maps_url}
-              onChange={(e) => set('maps_url', e.target.value)}
-              required
-            />
-            {mapsError ? (
-              <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{mapsError}</p>
+          {/* Dirección del hecho */}
+          <div
+            style={{
+              background: '#fafafa',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <p style={{ ...labelStyle, marginBottom: 16 }}>
+              Dirección donde ocurrió el hecho *
+            </p>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label style={labelStyle}>Calle</label>
+                  <input placeholder="Av. Corrientes" style={inputStyle} value={form.calle} onChange={(e) => set('calle', e.target.value)} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Número</label>
+                  <input placeholder="1234" style={inputStyle} value={form.numero} onChange={(e) => set('numero', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label style={labelStyle}>Barrio / localidad</label>
+                  <input placeholder="Palermo" style={inputStyle} value={form.barrio} onChange={(e) => set('barrio', e.target.value)} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Ciudad *</label>
+                  <input placeholder="Buenos Aires" style={inputStyle} value={form.ciudad} onChange={(e) => set('ciudad', e.target.value)} required />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label style={labelStyle}>Código postal</label>
+                  <input placeholder="1414" style={inputStyle} value={form.cp} onChange={(e) => set('cp', e.target.value)} />
+                </div>
+              </div>
+            </div>
+            {geoError ? (
+              <p style={{ color: '#ef4444', fontSize: 12, marginTop: 10 }}>{geoError}</p>
             ) : (
-              <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
-                Abrí Google Maps, buscá el lugar, copiá el link de la barra de dirección y pegalo acá.
+              <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 10 }}>
+                La dirección se usa para ubicar el marcador en el mapa. La calle exacta no se muestra públicamente.
               </p>
             )}
           </div>
@@ -236,9 +271,7 @@ export default function NewCasePage() {
             />
           </div>
 
-          {error && (
-            <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>
-          )}
+          {error && <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>}
 
           <button
             type="submit"
