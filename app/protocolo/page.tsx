@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Protocolo de moderación — Amiga Cuidado',
+  title: 'Protocolo de moderación — Cuidado Amiga',
 }
 
 const Section = ({ title, items }: { title: string; items: string[] }) => (
@@ -111,7 +111,7 @@ export default function ProtocoloPage() {
             Protocolo de moderación
           </h1>
           <p style={{ color: '#9d8fad', fontSize: 15, lineHeight: 1.7 }}>
-            Este documento define los criterios y conductas que rigen el trabajo de las moderadoras de Amiga Cuidado.
+            Este documento define los criterios y conductas que rigen el trabajo de las moderadoras de Cuidado Amiga.
             Es de lectura obligatoria antes de solicitar acceso.
           </p>
         </div>

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   // Enviar mail
   const { error: mailError } = await resend.emails.send({
-    from: 'Amiga Cuidado <noreply@cuidadoamiga.org>',
+    from: 'Cuidado Amiga <noreply@cuidadoamiga.com>',
     to: 'cuidadoamiga@proton.me',
     subject: `Nueva solicitud de moderadora — ${nombre}`,
     html: `

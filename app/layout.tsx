@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Amiga Cuidado — Mapa de casos en América Latina',
+  title: 'Cuidado Amiga — Mapa de casos en América Latina',
   description: 'Documentación colaborativa de femicidios y abusos en América Latina',
   keywords: ['femicidio', 'violencia de género', 'América Latina', 'mapa'],
 }

@@ -205,7 +205,7 @@ export default function AdminPage() {
           }}
           className="font-bold"
         >
-          amiga cuidado — Admin
+          cuidado amiga — Admin
         </span>
         <a href="/" style={{ color: '#9d8fad' }} className="text-sm hover:text-white">
           Ver mapa →

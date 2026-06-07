@@ -22,7 +22,7 @@ export default function Navbar() {
             }}
             className="text-xl font-bold tracking-tight"
           >
-            amiga cuidado
+            cuidado amiga
           </span>
         </Link>
 
