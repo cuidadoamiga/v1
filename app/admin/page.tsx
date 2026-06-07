@@ -44,19 +44,20 @@ export default function AdminPage() {
   async function fetchData() {
     if (!userId) return
     setLoading(true)
-    const { getServiceClient } = await import('@/lib/supabase')
-    const client = getServiceClient()
+    const supabase = createClient()
 
     if (tab === 'validar') {
-      const { data: casesData } = await client
+      const { data: casesData, error: casesError } = await supabase
         .from('cases')
         .select('*')
         .eq('estado', 'pendiente')
         .order('creado_at', { ascending: true })
 
+      if (casesError) console.error('fetchData cases error:', casesError)
+
       const casesWithVotes: CaseWithValidaciones[] = []
       for (const c of (casesData || [])) {
-        const { data: vals } = await client
+        const { data: vals } = await supabase
           .from('validaciones')
           .select('*')
           .eq('caso_id', c.id)
@@ -66,13 +67,13 @@ export default function AdminPage() {
       }
       setCases(casesWithVotes)
     } else if (tab === 'solicitudes') {
-      const { data } = await client
+      const { data } = await supabase
         .from('solicitudes_moderadoras')
         .select('*')
         .order('creado_at', { ascending: false })
       setSolicitudes((data || []) as SolicitudModeradora[])
     } else {
-      const { data } = await client
+      const { data } = await supabase
         .from('cases')
         .select('*')
         .eq('estado', tab)
@@ -87,23 +88,22 @@ export default function AdminPage() {
   }, [userId, tab])
 
   async function votar(caseId: string, decision: 'aprobado' | 'rechazado') {
-    const { getServiceClient } = await import('@/lib/supabase')
-    const client = getServiceClient()
+    const supabase = createClient()
 
-    await client.from('validaciones').insert({
+    await supabase.from('validaciones').insert({
       caso_id: caseId,
       moderadora_id: userId,
       decision,
       motivo_rechazo: decision === 'rechazado' ? (rejectMotivo[caseId] || null) : null,
-    })
+    } as any)
 
-    const { data: allVotos } = await client.from('validaciones').select('*').eq('caso_id', caseId)
+    const { data: allVotos } = await supabase.from('validaciones').select('*').eq('caso_id', caseId)
     const votos = (allVotos || []) as Validacion[]
 
     if (votos.some((v) => v.decision === 'rechazado')) {
-      await client.from('cases').update({ estado: 'rechazado' }).eq('id', caseId)
+      await supabase.from('cases').update({ estado: 'rechazado' }).eq('id', caseId)
     } else if (votos.filter((v) => v.decision === 'aprobado').length >= 3) {
-      await client.from('cases').update({ estado: 'aprobado' }).eq('id', caseId)
+      await supabase.from('cases').update({ estado: 'aprobado' }).eq('id', caseId)
     }
 
     fetchData()
@@ -111,15 +111,15 @@ export default function AdminPage() {
 
   async function deleteSolicitud(id: string) {
     if (!confirm('¿Eliminar esta solicitud?')) return
-    const { getServiceClient } = await import('@/lib/supabase')
-    await getServiceClient().from('solicitudes_moderadoras').delete().eq('id', id)
+    const supabase = createClient()
+    await supabase.from('solicitudes_moderadoras').delete().eq('id', id)
     setSolicitudes((prev) => prev.filter((s) => s.id !== id))
   }
 
   async function deleteCase(id: string) {
     if (!confirm('¿Eliminar este caso definitivamente?')) return
-    const { getServiceClient } = await import('@/lib/supabase')
-    await getServiceClient().from('cases').delete().eq('id', id)
+    const supabase = createClient()
+    await supabase.from('cases').delete().eq('id', id)
     setSimpleCases((prev) => prev.filter((c) => c.id !== id))
   }
 
