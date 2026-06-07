@@ -52,13 +52,6 @@ export default function Navbar() {
           >
             Unirse
           </Link>
-          <Link
-            href="/admin"
-            style={{ color: 'var(--text-secondary)' }}
-            className="text-sm hover:text-gray-900 transition-colors"
-          >
-            Admin
-          </Link>
         </div>
       </div>
     </nav>

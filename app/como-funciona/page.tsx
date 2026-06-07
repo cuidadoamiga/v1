@@ -108,7 +108,7 @@ export default function ComoFuncionaPage() {
           <div style={{ background: '#1a1a24', border: '1px solid #2a2a3a', borderRadius: 16, padding: '28px 32px' }}>
             <Section title="¿Qué información se publica?">
               <BulletList items={[
-                'Nombre completo de la víctima',
+                'Nombre completo del agresor',
                 'Fecha del hecho',
                 'País y ciudad',
                 'Tipo de caso (femicidio / abuso / acoso)',
