@@ -1,23 +1,26 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
-let _supabase: ReturnType<typeof createClient> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyClient = SupabaseClient<any>
 
-export function getSupabase() {
+let _supabase: AnyClient | null = null
+
+function getClient(): AnyClient {
   if (!_supabase) {
     _supabase = createClient(supabaseUrl, supabaseAnonKey)
   }
   return _supabase
 }
 
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+export const supabase: AnyClient = new Proxy({} as AnyClient, {
   get(_target, prop) {
-    return getSupabase()[prop as keyof ReturnType<typeof createClient>]
+    return getClient()[prop as keyof AnyClient]
   },
 })
 
-export function getServiceClient() {
+export function getServiceClient(): AnyClient {
   return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY ?? '')
 }
