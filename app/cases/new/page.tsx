@@ -3,7 +3,23 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { COUNTRIES, CountryCode } from '@/types'
+import { COUNTRIES } from '@/types'
+
+function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
+  // Formato: @lat,lng o ?q=lat,lng o /place/.../lat,lng
+  const patterns = [
+    /@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+    /[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+    /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
+  ]
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match) {
+      return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) }
+    }
+  }
+  return null
+}
 
 export default function NewCasePage() {
   const [form, setForm] = useState({
@@ -14,21 +30,29 @@ export default function NewCasePage() {
     descripcion: '',
     foto_url: '',
     fuentes: '',
-    lat: '',
-    lng: '',
+    maps_url: '',
   })
+  const [mapsError, setMapsError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
   function set(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+    if (field === 'maps_url') setMapsError('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    const coords = parseGoogleMapsUrl(form.maps_url)
+    if (!coords) {
+      setMapsError('No se pudieron extraer coordenadas. Pegá el link completo de Google Maps.')
+      setLoading(false)
+      return
+    }
 
     const fuentes = form.fuentes
       .split('\n')
@@ -43,11 +67,10 @@ export default function NewCasePage() {
       descripcion: form.descripcion,
       foto_url: form.foto_url || null,
       fuentes,
-      lat: parseFloat(form.lat),
-      lng: parseFloat(form.lng),
+      lat: coords.lat,
+      lng: coords.lng,
       estado: 'pendiente',
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: err } = await supabase.from('cases').insert(payload as any)
 
     if (err) {
@@ -59,7 +82,7 @@ export default function NewCasePage() {
   }
 
   const inputStyle = {
-    background: 'var(--bg-card)',
+    background: '#f8fafc',
     border: '1px solid var(--border)',
     color: 'var(--text-primary)',
     borderRadius: 8,
@@ -72,7 +95,7 @@ export default function NewCasePage() {
   const labelStyle = {
     color: 'var(--text-secondary)',
     fontSize: 12,
-    fontWeight: 500,
+    fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
     display: 'block',
@@ -83,10 +106,10 @@ export default function NewCasePage() {
     return (
       <div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }} className="flex items-center justify-center">
         <div
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
           className="rounded-2xl p-10 max-w-md text-center"
         >
-          <div className="text-5xl mb-4">🌸</div>
+          <div className="text-5xl mb-4">✅</div>
           <h2 style={{ color: 'var(--text-primary)' }} className="text-xl font-bold mb-2">
             Caso enviado
           </h2>
@@ -96,7 +119,7 @@ export default function NewCasePage() {
           <Link
             href="/"
             style={{ background: 'linear-gradient(135deg, var(--rose), var(--pink))', color: 'white' }}
-            className="text-sm font-medium px-6 py-2.5 rounded-full inline-block hover:opacity-90 transition-opacity"
+            className="text-sm font-semibold px-6 py-2.5 rounded-full inline-block hover:opacity-90 transition-opacity"
           >
             Volver al mapa
           </Link>
@@ -108,23 +131,16 @@ export default function NewCasePage() {
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }}>
       <nav
-        style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
+        style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
         className="sticky top-0 z-10 px-6 h-14 flex items-center"
       >
-        <Link href="/" style={{ color: 'var(--text-secondary)' }} className="text-sm hover:text-white transition-colors">
+        <Link href="/" style={{ color: 'var(--text-secondary)' }} className="text-sm hover:text-gray-900 transition-colors">
           ← Volver al mapa
         </Link>
       </nav>
 
       <main className="max-w-2xl mx-auto px-6 py-12">
-        <h1
-          style={{
-            background: 'linear-gradient(135deg, var(--pink), var(--violet))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-          className="text-3xl font-bold mb-2"
-        >
+        <h1 style={{ color: 'var(--text-primary)' }} className="text-3xl font-bold mb-2">
           Reportar un caso
         </h1>
         <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-8">
@@ -133,13 +149,19 @@ export default function NewCasePage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
-            <label style={labelStyle}>Nombre completo *</label>
-            <input style={inputStyle} value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required />
+            <label style={labelStyle}>Nombre completo del perpetrador *</label>
+            <input
+              placeholder="Nombre y apellido"
+              style={inputStyle}
+              value={form.nombre}
+              onChange={(e) => set('nombre', e.target.value)}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label style={labelStyle}>Fecha *</label>
+              <label style={labelStyle}>Fecha del hecho *</label>
               <input type="date" style={inputStyle} value={form.fecha} onChange={(e) => set('fecha', e.target.value)} required />
             </div>
             <div>
@@ -171,31 +193,26 @@ export default function NewCasePage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label style={labelStyle}>Latitud *</label>
-              <input
-                type="number"
-                step="any"
-                placeholder="-34.6037"
-                style={inputStyle}
-                value={form.lat}
-                onChange={(e) => set('lat', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>Longitud *</label>
-              <input
-                type="number"
-                step="any"
-                placeholder="-58.3816"
-                style={inputStyle}
-                value={form.lng}
-                onChange={(e) => set('lng', e.target.value)}
-                required
-              />
-            </div>
+          <div>
+            <label style={labelStyle}>Ubicación (link de Google Maps) *</label>
+            <input
+              type="url"
+              placeholder="https://maps.google.com/..."
+              style={{
+                ...inputStyle,
+                borderColor: mapsError ? '#ef4444' : 'var(--border)',
+              }}
+              value={form.maps_url}
+              onChange={(e) => set('maps_url', e.target.value)}
+              required
+            />
+            {mapsError ? (
+              <p style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>{mapsError}</p>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
+                Abrí Google Maps, buscá el lugar, copiá el link de la barra de dirección y pegalo acá.
+              </p>
+            )}
           </div>
 
           <div>
@@ -220,22 +237,20 @@ export default function NewCasePage() {
           </div>
 
           {error && (
-            <p style={{ color: 'var(--rose)', fontSize: 13 }}>{error}</p>
+            <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
             style={{
-              background: loading
-                ? 'var(--border)'
-                : 'linear-gradient(135deg, var(--rose), var(--pink))',
-              color: 'white',
+              background: loading ? 'var(--border)' : 'linear-gradient(135deg, var(--rose), var(--pink))',
+              color: loading ? 'var(--text-secondary)' : 'white',
               border: 'none',
               borderRadius: 999,
               padding: '12px 32px',
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
               alignSelf: 'flex-start',
             }}

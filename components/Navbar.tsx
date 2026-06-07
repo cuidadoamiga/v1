@@ -1,16 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false)
-
   return (
     <nav
       style={{
         background: 'var(--bg-secondary)',
         borderBottom: '1px solid var(--border)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
       }}
       className="sticky top-0 z-50"
     >
@@ -18,7 +16,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <span
             style={{
-              background: 'linear-gradient(135deg, var(--pink), var(--violet))',
+              background: 'linear-gradient(135deg, var(--rose), var(--violet))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
@@ -35,14 +33,14 @@ export default function Navbar() {
               background: 'linear-gradient(135deg, var(--rose), var(--pink))',
               color: 'white',
             }}
-            className="text-sm font-medium px-4 py-1.5 rounded-full hover:opacity-90 transition-opacity"
+            className="text-sm font-semibold px-4 py-1.5 rounded-full hover:opacity-90 transition-opacity"
           >
             + Reportar caso
           </Link>
           <Link
             href="/admin"
             style={{ color: 'var(--text-secondary)' }}
-            className="text-sm hover:text-white transition-colors"
+            className="text-sm hover:text-gray-900 transition-colors"
           >
             Admin
           </Link>

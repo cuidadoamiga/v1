@@ -11,39 +11,49 @@ export default function CaseCard({ c }: { c: Case }) {
           background: 'var(--bg-card)',
           border: '1px solid var(--border)',
         }}
-        className="rounded-xl p-4 hover:border-pink-500/40 transition-all cursor-pointer group"
+        className="rounded-xl p-4 hover:shadow-md transition-all cursor-pointer group"
       >
         <div className="flex items-start gap-3">
           {c.foto_url ? (
             <img
               src={c.foto_url}
               alt={c.nombre}
-              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+              className="w-11 h-11 rounded-full object-cover flex-shrink-0"
             />
           ) : (
             <div
-              style={{ background: color + '22', border: `1px solid ${color}44` }}
-              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg"
+              style={{
+                background: '#f1f5f9',
+                border: '1px solid var(--border)',
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                fontSize: 20,
+              }}
             >
-              🌸
+              👤
             </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span
                 style={{
-                  background: color + '22',
+                  background: color + '18',
                   color,
-                  border: `1px solid ${color}66`,
+                  border: `1px solid ${color}44`,
                 }}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"
               >
                 {CASE_TYPE_LABELS[c.tipo]}
               </span>
             </div>
             <h3
               style={{ color: 'var(--text-primary)' }}
-              className="font-semibold text-sm truncate group-hover:text-pink-400 transition-colors"
+              className="font-semibold text-sm truncate group-hover:text-pink-700 transition-colors"
             >
               {c.nombre}
             </h3>

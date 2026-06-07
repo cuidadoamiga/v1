@@ -59,7 +59,9 @@ export default function HomePage() {
   const [cases, setCases] = useState<Case[]>([])
   const [filtered, setFiltered] = useState<Case[]>([])
   const [selectedTypes, setSelectedTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
+  const [pendingTypes, setPendingTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
   const [selectedCountry, setSelectedCountry] = useState('')
+  const [pendingCountry, setPendingCountry] = useState('')
   const [loading, setLoading] = useState(true)
   const [usingDemo, setUsingDemo] = useState(false)
 
@@ -99,6 +101,11 @@ export default function HomePage() {
     setFiltered(result)
   }, [cases, selectedTypes, selectedCountry])
 
+  function handleSearch() {
+    setSelectedTypes(pendingTypes)
+    setSelectedCountry(pendingCountry)
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <Navbar />
@@ -106,9 +113,9 @@ export default function HomePage() {
       {usingDemo && (
         <div
           style={{
-            background: '#9333ea22',
-            borderBottom: '1px solid #9333ea55',
-            color: '#c084fc',
+            background: '#fef9c3',
+            borderBottom: '1px solid #fde047',
+            color: '#854d0e',
           }}
           className="text-center text-xs py-2 px-4"
         >
@@ -128,10 +135,11 @@ export default function HomePage() {
         >
           <div className="p-4 flex-shrink-0">
             <Filters
-              selectedTypes={selectedTypes}
-              selectedCountry={selectedCountry}
-              onTypeChange={setSelectedTypes}
-              onCountryChange={setSelectedCountry}
+              selectedTypes={pendingTypes}
+              selectedCountry={pendingCountry}
+              onTypeChange={setPendingTypes}
+              onCountryChange={setPendingCountry}
+              onSearch={handleSearch}
             />
             <p style={{ color: 'var(--text-secondary)' }} className="text-xs mt-3 px-1">
               {filtered.length} {filtered.length === 1 ? 'caso' : 'casos'} encontrados

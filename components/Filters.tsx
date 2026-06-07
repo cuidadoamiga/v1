@@ -7,12 +7,13 @@ interface FiltersProps {
   selectedCountry: string
   onTypeChange: (types: CaseType[]) => void
   onCountryChange: (country: string) => void
+  onSearch: () => void
 }
 
 const TYPES: { value: CaseType; label: string; color: string }[] = [
-  { value: 'femicidio', label: 'Femicidio', color: '#e11d48' },
-  { value: 'abuso', label: 'Abuso', color: '#9333ea' },
-  { value: 'acoso', label: 'Acoso', color: '#ec4899' },
+  { value: 'femicidio', label: 'Femicidio', color: '#be123c' },
+  { value: 'abuso', label: 'Abuso', color: '#7c3aed' },
+  { value: 'acoso', label: 'Acoso', color: '#db2777' },
 ]
 
 export default function Filters({
@@ -20,6 +21,7 @@ export default function Filters({
   selectedCountry,
   onTypeChange,
   onCountryChange,
+  onSearch,
 }: FiltersProps) {
   function toggleType(type: CaseType) {
     if (selectedTypes.includes(type)) {
@@ -35,9 +37,9 @@ export default function Filters({
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
       }}
-      className="rounded-2xl p-4 flex flex-wrap gap-3 items-center"
+      className="rounded-xl p-4 flex flex-col gap-3"
     >
-      <span style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium uppercase tracking-wider">
+      <span style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wider">
         Filtrar por
       </span>
 
@@ -49,11 +51,11 @@ export default function Filters({
               key={t.value}
               onClick={() => toggleType(t.value)}
               style={{
-                background: active ? t.color + '22' : 'transparent',
+                background: active ? t.color : 'transparent',
                 border: `1px solid ${active ? t.color : 'var(--border)'}`,
-                color: active ? t.color : 'var(--text-secondary)',
+                color: active ? '#ffffff' : 'var(--text-secondary)',
               }}
-              className="text-xs font-medium px-3 py-1 rounded-full transition-all hover:opacity-80"
+              className="text-xs font-medium px-3 py-1.5 rounded-full transition-all hover:opacity-80"
             >
               {t.label}
             </button>
@@ -61,25 +63,35 @@ export default function Filters({
         })}
       </div>
 
-      <div className="ml-auto">
-        <select
-          value={selectedCountry}
-          onChange={(e) => onCountryChange(e.target.value)}
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-primary)',
-          }}
-          className="text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer"
-        >
-          <option value="">Todos los países</option>
-          {Object.entries(COUNTRIES).map(([code, name]) => (
-            <option key={code} value={code}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        value={selectedCountry}
+        onChange={(e) => onCountryChange(e.target.value)}
+        style={{
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-primary)',
+        }}
+        className="text-sm rounded-lg px-3 py-2 outline-none cursor-pointer w-full"
+      >
+        <option value="">Todos los países</option>
+        {Object.entries(COUNTRIES).map(([code, name]) => (
+          <option key={code} value={code}>
+            {name}
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={onSearch}
+        style={{
+          background: 'linear-gradient(135deg, var(--rose), var(--pink))',
+          color: 'white',
+          border: 'none',
+        }}
+        className="w-full py-2 rounded-lg text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity"
+      >
+        Buscar
+      </button>
     </div>
   )
 }
