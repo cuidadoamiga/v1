@@ -1,65 +1,168 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+import Navbar from '@/components/Navbar'
+import Filters from '@/components/Filters'
+import CaseCard from '@/components/CaseCard'
+import { Case, CaseType } from '@/types'
+import { supabase } from '@/lib/supabase'
+
+const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
+
+const DEMO_CASES: Case[] = [
+  {
+    id: '1',
+    nombre: 'Caso Demo — Argentina',
+    fecha: '2024-03-15',
+    tipo: 'femicidio',
+    pais: 'Argentina',
+    descripcion: 'Caso de ejemplo para demostración del mapa.',
+    foto_url: null,
+    fuentes: ['https://ejemplo.com'],
+    lat: -34.6037,
+    lng: -58.3816,
+    estado: 'aprobado',
+    creado_at: '2024-03-15T00:00:00Z',
+  },
+  {
+    id: '2',
+    nombre: 'Caso Demo — Brasil',
+    fecha: '2024-04-02',
+    tipo: 'abuso',
+    pais: 'Brasil',
+    descripcion: 'Caso de ejemplo.',
+    foto_url: null,
+    fuentes: [],
+    lat: -23.5505,
+    lng: -46.6333,
+    estado: 'aprobado',
+    creado_at: '2024-04-02T00:00:00Z',
+  },
+  {
+    id: '3',
+    nombre: 'Caso Demo — México',
+    fecha: '2024-05-10',
+    tipo: 'acoso',
+    pais: 'México',
+    descripcion: 'Caso de ejemplo.',
+    foto_url: null,
+    fuentes: [],
+    lat: 19.4326,
+    lng: -99.1332,
+    estado: 'aprobado',
+    creado_at: '2024-05-10T00:00:00Z',
+  },
+]
+
+export default function HomePage() {
+  const [cases, setCases] = useState<Case[]>([])
+  const [filtered, setFiltered] = useState<Case[]>([])
+  const [selectedTypes, setSelectedTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [usingDemo, setUsingDemo] = useState(false)
+
+  useEffect(() => {
+    async function fetchCases() {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!url || url === 'your_supabase_url') {
+        setCases(DEMO_CASES)
+        setUsingDemo(true)
+        setLoading(false)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('estado', 'aprobado')
+        .order('fecha', { ascending: false })
+
+      if (error || !data) {
+        setCases(DEMO_CASES)
+        setUsingDemo(true)
+      } else {
+        setCases(data as Case[])
+      }
+      setLoading(false)
+    }
+
+    fetchCases()
+  }, [])
+
+  useEffect(() => {
+    let result = cases.filter((c) => selectedTypes.includes(c.tipo))
+    if (selectedCountry) {
+      result = result.filter((c) => c.pais === selectedCountry)
+    }
+    setFiltered(result)
+  }, [cases, selectedTypes, selectedCountry])
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Navbar />
+
+      {usingDemo && (
+        <div
+          style={{
+            background: '#9333ea22',
+            borderBottom: '1px solid #9333ea55',
+            color: '#c084fc',
+          }}
+          className="text-center text-xs py-2 px-4"
+        >
+          Mostrando datos de demo — configurá Supabase en <code>.env.local</code> para ver casos reales
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        <aside
+          style={{
+            background: 'var(--bg-secondary)',
+            borderRight: '1px solid var(--border)',
+            width: 320,
+            flexShrink: 0,
+          }}
+          className="flex flex-col overflow-hidden"
+        >
+          <div className="p-4 flex-shrink-0">
+            <Filters
+              selectedTypes={selectedTypes}
+              selectedCountry={selectedCountry}
+              onTypeChange={setSelectedTypes}
+              onCountryChange={setSelectedCountry}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <p style={{ color: 'var(--text-secondary)' }} className="text-xs mt-3 px-1">
+              {filtered.length} {filtered.length === 1 ? 'caso' : 'casos'} encontrados
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+                  className="rounded-xl h-20 animate-pulse"
+                />
+              ))
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-12">
+                <p style={{ color: 'var(--text-secondary)' }} className="text-sm">
+                  No hay casos con los filtros seleccionados
+                </p>
+              </div>
+            ) : (
+              filtered.map((c) => <CaseCard key={c.id} c={c} />)
+            )}
+          </div>
+        </aside>
+
+        <main className="flex-1 p-4">
+          <MapView cases={filtered} />
+        </main>
+      </div>
     </div>
-  );
+  )
 }
