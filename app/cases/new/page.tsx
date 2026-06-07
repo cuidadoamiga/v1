@@ -252,7 +252,7 @@ export default function NewCasePage() {
           </div>
 
           <div>
-            <label style={labelStyle}>URL de foto (opcional)</label>
+            <label style={labelStyle}>URL de foto del agresor (opcional)</label>
             <input
               type="url"
               placeholder="https://..."
@@ -260,6 +260,9 @@ export default function NewCasePage() {
               value={form.foto_url}
               onChange={(e) => set('foto_url', e.target.value)}
             />
+            <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
+              Solo fotos públicas (no de redes sociales privadas).
+            </p>
           </div>
 
           <div>
