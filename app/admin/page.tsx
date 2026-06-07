@@ -229,12 +229,35 @@ function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
                   <span style={{ background: color + '22', color, border: `1px solid ${color}55` }} className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                     {CASE_TYPE_LABELS[c.tipo]}
                   </span>
-                  <span style={{ color: '#9d8fad' }} className="text-xs">{c.fecha} · {c.pais}</span>
+                  <span style={{ color: '#9d8fad' }} className="text-xs">{c.fecha} · {c.pais}{c.ciudad ? `, ${c.ciudad}` : ''}</span>
                 </div>
                 <h3 style={{ color: '#f0eaf5' }} className="font-semibold">{c.nombre}</h3>
                 {c.victima && <p style={{ color: '#c084fc', fontSize: 12, marginTop: 2 }}>Víctima: {c.victima}</p>}
+                {(c as any).proceso_judicial && (
+                  <span style={{ background: (c as any).proceso_judicial === 'cerrado' ? '#22c55e22' : '#f9731622', color: (c as any).proceso_judicial === 'cerrado' ? '#86efac' : '#fdba74', border: `1px solid ${(c as any).proceso_judicial === 'cerrado' ? '#22c55e44' : '#f9731644'}`, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, display: 'inline-block', marginTop: 4 }}>
+                    {(c as any).proceso_judicial === 'cerrado' ? 'Proceso cerrado' : 'En proceso'}
+                  </span>
+                )}
                 {c.descripcion && <p style={{ color: '#9d8fad' }} className="text-xs mt-1 line-clamp-2">{c.descripcion}</p>}
+                {c.fuentes?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {c.fuentes.map((f, i) => (
+                      <a key={i} href={f} target="_blank" rel="noopener noreferrer" style={{ color: '#ec4899', fontSize: 11 }} className="underline truncate max-w-[200px]">
+                        Fuente {i + 1}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
+              {c.foto_url && (
+                <img
+                  src={c.foto_url}
+                  alt={c.nombre}
+                  referrerPolicy="no-referrer"
+                  style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid #2a2a3a' }}
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
+              )}
               <div style={{ background: '#0d0d12', border: '1px solid #2a2a3a', borderRadius: 8, padding: '8px 16px', textAlign: 'center', flexShrink: 0 }}>
                 <div style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>{aprobados}</div>
                 <div style={{ color: '#9d8fad', fontSize: 10 }}>de 3</div>

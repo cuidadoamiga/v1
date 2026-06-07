@@ -18,7 +18,13 @@ export default function CaseCard({ c }: { c: Case }) {
             <img
               src={c.foto_url}
               alt={c.nombre}
+              referrerPolicy="no-referrer"
               className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+              onError={(e) => {
+                const t = e.currentTarget
+                t.style.display = 'none'
+                t.nextElementSibling?.removeAttribute('style')
+              }}
             />
           ) : (
             <div

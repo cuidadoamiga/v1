@@ -32,6 +32,7 @@ export default function NewCasePage() {
     descripcion: '',
     foto_url: '',
     fuentes: '',
+    proceso_judicial: '' as '' | 'en_proceso' | 'cerrado',
     calle: '',
     numero: '',
     barrio: '',
@@ -80,6 +81,7 @@ export default function NewCasePage() {
       descripcion: form.descripcion,
       foto_url: form.foto_url || null,
       fuentes,
+      proceso_judicial: form.proceso_judicial || null,
       lat: coords.lat,
       lng: coords.lng,
       estado: 'pendiente',
@@ -288,6 +290,36 @@ export default function NewCasePage() {
               value={form.fuentes}
               onChange={(e) => set('fuentes', e.target.value)}
             />
+          </div>
+
+          <div
+            style={{
+              background: '#fafafa',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <p style={{ ...labelStyle, marginBottom: 12 }}>Proceso judicial</p>
+            <div className="flex flex-col gap-2">
+              {([
+                { value: '', label: 'No especificado' },
+                { value: 'en_proceso', label: 'En proceso' },
+                { value: 'cerrado', label: 'Cerrado / sentencia firme' },
+              ] as const).map((opt) => (
+                <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="proceso_judicial"
+                    value={opt.value}
+                    checked={form.proceso_judicial === opt.value}
+                    onChange={() => set('proceso_judicial', opt.value)}
+                    style={{ accentColor: '#be123c', width: 16, height: 16 }}
+                  />
+                  <span style={{ color: 'var(--text-primary)', fontSize: 14 }}>{opt.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {error && <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>}

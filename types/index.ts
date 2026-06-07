@@ -2,6 +2,8 @@ export type CaseType = 'femicidio' | 'abuso' | 'acoso'
 
 export type CaseStatus = 'pendiente' | 'aprobado' | 'rechazado'
 
+export type ProcesoJudicial = 'en_proceso' | 'cerrado' | null
+
 export interface Case {
   id: string
   nombre: string
@@ -13,6 +15,7 @@ export interface Case {
   descripcion: string
   foto_url: string | null
   fuentes: string[]
+  proceso_judicial: ProcesoJudicial
   lat: number
   lng: number
   estado: CaseStatus
