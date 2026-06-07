@@ -17,6 +17,27 @@ export interface Case {
   creado_at: string
 }
 
+export interface Validacion {
+  id: string
+  caso_id: string
+  moderadora_id: string
+  decision: 'aprobado' | 'rechazado'
+  motivo_rechazo: string | null
+  created_at: string
+}
+
+export interface SolicitudModeradora {
+  id: string
+  nombre: string
+  mail: string
+  pais: string
+  organizacion: string | null
+  motivo: string
+  como_se_entero: string
+  estado: 'pendiente' | 'aprobada' | 'rechazada'
+  creado_at: string
+}
+
 export type CountryCode =
   | 'AR' | 'BR' | 'CL' | 'CO' | 'MX' | 'PE' | 'UY' | 'PY'
   | 'BO' | 'EC' | 'VE' | 'CR' | 'PA' | 'DO' | 'GT' | 'HN'
@@ -52,7 +73,7 @@ export const CASE_TYPE_LABELS: Record<CaseType, string> = {
 }
 
 export const CASE_TYPE_COLORS: Record<CaseType, string> = {
-  femicidio: '#e11d48',
-  abuso: '#9333ea',
-  acoso: '#ec4899',
+  femicidio: '#be123c',
+  abuso: '#7c3aed',
+  acoso: '#db2777',
 }
