@@ -16,24 +16,7 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    let email = identifier.trim()
-
-    // Si no tiene @, buscar el email por username
-    if (!email.includes('@')) {
-      const res = await fetch('/api/auth/lookup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email }),
-      })
-      if (!res.ok) {
-        setError('Usuario o contraseña incorrectos.')
-        setLoading(false)
-        return
-      }
-      const data = await res.json()
-      email = data.email
-    }
-
+    const email = identifier.trim()
     const supabase = createClient()
     const { error: err } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -82,11 +65,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
-            type="text"
-            placeholder="Email o usuario"
+            type="email"
+            placeholder="Email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            autoComplete="username"
+            autoComplete="email"
             required
             style={inputStyle}
           />
