@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('') // email o username
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -16,11 +16,29 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    let email = identifier.trim()
+
+    // Si no tiene @, buscar el email por username
+    if (!email.includes('@')) {
+      const res = await fetch('/api/auth/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email }),
+      })
+      if (!res.ok) {
+        setError('Usuario o contraseña incorrectos.')
+        setLoading(false)
+        return
+      }
+      const data = await res.json()
+      email = data.email
+    }
+
     const supabase = createClient()
     const { error: err } = await supabase.auth.signInWithPassword({ email, password })
 
     if (err) {
-      setError('Email o contraseña incorrectos.')
+      setError('Usuario o contraseña incorrectos.')
       setLoading(false)
     } else {
       router.push('/admin')
@@ -64,11 +82,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
+            type="text"
+            placeholder="Email o usuario"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            autoComplete="username"
             required
             style={inputStyle}
           />
