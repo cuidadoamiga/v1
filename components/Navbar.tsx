@@ -19,10 +19,11 @@ export default function Navbar() {
               background: 'linear-gradient(135deg, var(--rose), var(--violet))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              fontWeight: 900,
             }}
-            className="text-xl font-bold tracking-tight"
+            className="text-xl tracking-tight"
           >
-            cuidado amiga
+            cuidadoamiga
           </span>
         </Link>
 
