@@ -35,7 +35,7 @@ export default function NewCasePage() {
       .map((s) => s.trim())
       .filter(Boolean)
 
-    const { error: err } = await supabase.from('cases').insert({
+    const payload = {
       nombre: form.nombre,
       fecha: form.fecha,
       tipo: form.tipo,
@@ -46,7 +46,9 @@ export default function NewCasePage() {
       lat: parseFloat(form.lat),
       lng: parseFloat(form.lng),
       estado: 'pendiente',
-    })
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: err } = await supabase.from('cases').insert(payload as any)
 
     if (err) {
       setError('Error al enviar el caso. Por favor intentá de nuevo.')

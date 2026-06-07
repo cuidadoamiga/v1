@@ -1,26 +1,11 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyClient = SupabaseClient<any>
+export const supabase = createClient<any>(supabaseUrl, supabaseAnonKey)
 
-let _supabase: AnyClient | null = null
-
-function getClient(): AnyClient {
-  if (!_supabase) {
-    _supabase = createClient(supabaseUrl, supabaseAnonKey)
-  }
-  return _supabase
-}
-
-export const supabase: AnyClient = new Proxy({} as AnyClient, {
-  get(_target, prop) {
-    return getClient()[prop as keyof AnyClient]
-  },
-})
-
-export function getServiceClient(): AnyClient {
-  return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY ?? '')
+export function getServiceClient() {
+  return createClient<any>(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'placeholder')
 }
