@@ -10,30 +10,52 @@ interface CaseWithValidaciones extends Case {
   mi_voto: Validacion | null
 }
 
+// Cuentas hardcodeadas via env vars — ID fijo para que los votos sean consistentes
+const CUENTAS = [
+  {
+    usuario: process.env.NEXT_PUBLIC_MOD1_USER || 'mod1',
+    password: process.env.NEXT_PUBLIC_MOD1_PASS || 'pass1',
+    id: 'mod-account-1',
+    nombre: process.env.NEXT_PUBLIC_MOD1_NOMBRE || 'Moderadora 1',
+  },
+  {
+    usuario: process.env.NEXT_PUBLIC_MOD2_USER || 'mod2',
+    password: process.env.NEXT_PUBLIC_MOD2_PASS || 'pass2',
+    id: 'mod-account-2',
+    nombre: process.env.NEXT_PUBLIC_MOD2_NOMBRE || 'Moderadora 2',
+  },
+  {
+    usuario: process.env.NEXT_PUBLIC_MOD3_USER || 'mod3',
+    password: process.env.NEXT_PUBLIC_MOD3_PASS || 'pass3',
+    id: 'mod-account-3',
+    nombre: process.env.NEXT_PUBLIC_MOD3_NOMBRE || 'Moderadora 3',
+  },
+]
+
 export default function AdminPage() {
   const [auth, setAuth] = useState(false)
+  const [usuario, setUsuario] = useState('')
   const [password, setPassword] = useState('')
+  const [currentUser, setCurrentUser] = useState<typeof CUENTAS[0] | null>(null)
   const [tab, setTab] = useState<Tab>('validar')
   const [cases, setCases] = useState<CaseWithValidaciones[]>([])
   const [simpleCases, setSimpleCases] = useState<Case[]>([])
   const [solicitudes, setSolicitudes] = useState<SolicitudModeradora[]>([])
   const [loading, setLoading] = useState(true)
   const [rejectMotivo, setRejectMotivo] = useState<Record<string, string>>({})
-  const [userId] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem('mod_id') || crypto.randomUUID()) : '')
 
-  useEffect(() => {
-    if (userId && typeof window !== 'undefined') {
-      localStorage.setItem('mod_id', userId)
-    }
-  }, [userId])
+  const userId = currentUser?.id || ''
 
   async function login(e: React.FormEvent) {
     e.preventDefault()
-    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
-    if (password === adminPass) {
+    const cuenta = CUENTAS.find(
+      (c) => c.usuario === usuario.trim() && c.password === password
+    )
+    if (cuenta) {
+      setCurrentUser(cuenta)
       setAuth(true)
     } else {
-      alert('Contraseña incorrecta')
+      alert('Usuario o contraseña incorrectos')
     }
   }
 
@@ -148,10 +170,27 @@ export default function AdminPage() {
           </h1>
           <form onSubmit={login} className="flex flex-col gap-4">
             <input
+              type="text"
+              placeholder="Usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              autoComplete="username"
+              style={{
+                background: '#13131a',
+                border: '1px solid #2a2a3a',
+                color: '#f0eaf5',
+                borderRadius: 8,
+                padding: '10px 14px',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+            <input
               type="password"
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               style={{
                 background: '#13131a',
                 border: '1px solid #2a2a3a',
@@ -207,9 +246,12 @@ export default function AdminPage() {
         >
           cuidado amiga — Admin
         </span>
-        <a href="/" style={{ color: '#9d8fad' }} className="text-sm hover:text-white">
-          Ver mapa →
-        </a>
+        <div className="flex items-center gap-4">
+          <span style={{ color: '#9d8fad', fontSize: 13 }}>{currentUser?.nombre}</span>
+          <a href="/" style={{ color: '#9d8fad' }} className="text-sm hover:text-white">
+            Ver mapa →
+          </a>
+        </div>
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
