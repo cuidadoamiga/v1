@@ -3,13 +3,29 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { Case, Validacion, SolicitudModeradora, CASE_TYPE_COLORS, CASE_TYPE_LABELS } from '@/types'
+import { Case, Validacion, SolicitudModeradora, CASE_TYPE_COLORS, CASE_TYPE_LABELS, COUNTRIES } from '@/types'
+
+const OWNER_EMAIL = 'sofiajuredare@gmail.com'
 
 type Tab = 'validar' | 'pendiente' | 'aprobado' | 'rechazado' | 'solicitudes'
 
 interface CaseWithValidaciones extends Case {
   validaciones: Validacion[]
   mi_voto: Validacion | null
+}
+
+interface EditForm {
+  nombre: string
+  victima: string
+  fecha: string
+  tipo: string
+  pais: string
+  ciudad: string
+  descripcion: string
+  foto_url: string
+  fuentes: string
+  proceso_judicial: string
+  estado: string
 }
 
 export default function AdminPage() {
@@ -21,7 +37,12 @@ export default function AdminPage() {
   const [solicitudes, setSolicitudes] = useState<SolicitudModeradora[]>([])
   const [loading, setLoading] = useState(true)
   const [rejectMotivo, setRejectMotivo] = useState<Record<string, string>>({})
+  const [editingCase, setEditingCase] = useState<Case | null>(null)
+  const [editForm, setEditForm] = useState<EditForm | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
   const router = useRouter()
+
+  const isOwner = userEmail === OWNER_EMAIL
 
   useEffect(() => {
     const supabase = createClient()
@@ -117,10 +138,56 @@ export default function AdminPage() {
   }
 
   async function deleteCase(id: string) {
-    if (!confirm('¿Eliminar este caso definitivamente?')) return
+    if (!confirm('¿Eliminar este caso definitivamente? Esta acción no se puede deshacer.')) return
     const supabase = createClient()
     await supabase.from('cases').delete().eq('id', id)
+    setCases((prev) => prev.filter((c) => c.id !== id))
     setSimpleCases((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  function openEdit(c: Case) {
+    setEditingCase(c)
+    setEditForm({
+      nombre: c.nombre || '',
+      victima: (c as any).victima || '',
+      fecha: c.fecha || '',
+      tipo: c.tipo || 'femicidio',
+      pais: c.pais || '',
+      ciudad: c.ciudad || '',
+      descripcion: c.descripcion || '',
+      foto_url: c.foto_url || '',
+      fuentes: Array.isArray(c.fuentes) ? c.fuentes.join('\n') : '',
+      proceso_judicial: (c as any).proceso_judicial || '',
+      estado: c.estado || 'pendiente',
+    })
+  }
+
+  async function saveEdit() {
+    if (!editingCase || !editForm) return
+    setEditSaving(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('cases').update({
+      nombre: editForm.nombre,
+      victima: editForm.victima || null,
+      fecha: editForm.fecha,
+      tipo: editForm.tipo,
+      pais: editForm.pais,
+      ciudad: editForm.ciudad || null,
+      descripcion: editForm.descripcion,
+      foto_url: editForm.foto_url || null,
+      fuentes: editForm.fuentes.split('\n').map(s => s.trim()).filter(Boolean),
+      proceso_judicial: editForm.proceso_judicial || null,
+      estado: editForm.estado,
+    } as any).eq('id', editingCase.id)
+
+    if (error) {
+      alert('Error al guardar: ' + error.message)
+    } else {
+      setEditingCase(null)
+      setEditForm(null)
+      fetchData()
+    }
+    setEditSaving(false)
   }
 
   const TABS: { key: Tab; label: string }[] = [
@@ -137,6 +204,26 @@ export default function AdminPage() {
         <div style={{ color: '#9d8fad', fontSize: 14 }}>Verificando acceso...</div>
       </div>
     )
+  }
+
+  const inputStyle = {
+    background: '#13131a',
+    border: '1px solid #2a2a3a',
+    color: '#f0eaf5',
+    borderRadius: 8,
+    padding: '8px 12px',
+    fontSize: 13,
+    outline: 'none',
+    width: '100%',
+  }
+  const labelStyle = {
+    color: '#9d8fad',
+    fontSize: 11,
+    fontWeight: 600 as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    display: 'block',
+    marginBottom: 4,
   }
 
   return (
@@ -195,22 +282,125 @@ export default function AdminPage() {
             ))}
           </div>
         ) : tab === 'validar' ? (
-          <ValidarSection cases={cases} rejectMotivo={rejectMotivo} setRejectMotivo={setRejectMotivo} onVotar={votar} />
+          <ValidarSection cases={cases} rejectMotivo={rejectMotivo} setRejectMotivo={setRejectMotivo} onVotar={votar} isOwner={isOwner} onEdit={openEdit} onDelete={deleteCase} />
         ) : tab === 'solicitudes' ? (
           <SolicitudesSection solicitudes={solicitudes} onDelete={deleteSolicitud} />
         ) : (
-          <CasesSection cases={simpleCases} onDelete={deleteCase} />
+          <CasesSection cases={simpleCases} isOwner={isOwner} onEdit={openEdit} onDelete={deleteCase} />
         )}
       </main>
+
+      {/* Modal de edición */}
+      {editingCase && editForm && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, overflowY: 'auto' }}
+          className="flex items-start justify-center p-4 pt-8"
+          onClick={(e) => { if (e.target === e.currentTarget) { setEditingCase(null); setEditForm(null) } }}
+        >
+          <div style={{ background: '#1a1a24', border: '1px solid #2a2a3a', borderRadius: 16, width: '100%', maxWidth: 560 }} className="p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 style={{ color: '#f0eaf5', fontWeight: 700, fontSize: 16 }}>Editar caso</h2>
+              <button onClick={() => { setEditingCase(null); setEditForm(null) }} style={{ color: '#9d8fad', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20 }}>×</button>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Nombre del agresor</label>
+              <input style={inputStyle} value={editForm.nombre} onChange={e => setEditForm(f => f && ({ ...f, nombre: e.target.value }))} />
+            </div>
+            <div>
+              <label style={labelStyle}>Nombre de la víctima</label>
+              <input style={inputStyle} value={editForm.victima} onChange={e => setEditForm(f => f && ({ ...f, victima: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label style={labelStyle}>Fecha</label>
+                <input type="date" style={inputStyle} value={editForm.fecha} onChange={e => setEditForm(f => f && ({ ...f, fecha: e.target.value }))} />
+              </div>
+              <div>
+                <label style={labelStyle}>Tipo</label>
+                <select style={inputStyle} value={editForm.tipo} onChange={e => setEditForm(f => f && ({ ...f, tipo: e.target.value }))}>
+                  <option value="femicidio">Femicidio</option>
+                  <option value="abuso">Abuso</option>
+                  <option value="acoso">Acoso</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label style={labelStyle}>País</label>
+                <select style={inputStyle} value={editForm.pais} onChange={e => setEditForm(f => f && ({ ...f, pais: e.target.value }))}>
+                  <option value="">— seleccionar —</option>
+                  {Object.entries(COUNTRIES).map(([code, name]) => (
+                    <option key={code} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Ciudad</label>
+                <input style={inputStyle} value={editForm.ciudad} onChange={e => setEditForm(f => f && ({ ...f, ciudad: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <label style={labelStyle}>Descripción</label>
+              <textarea style={{ ...inputStyle, minHeight: 72, resize: 'vertical' }} value={editForm.descripcion} onChange={e => setEditForm(f => f && ({ ...f, descripcion: e.target.value }))} />
+            </div>
+            <div>
+              <label style={labelStyle}>URL foto del agresor</label>
+              <input style={inputStyle} value={editForm.foto_url} onChange={e => setEditForm(f => f && ({ ...f, foto_url: e.target.value }))} />
+            </div>
+            <div>
+              <label style={labelStyle}>Fuentes (una por línea)</label>
+              <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={editForm.fuentes} onChange={e => setEditForm(f => f && ({ ...f, fuentes: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label style={labelStyle}>Proceso judicial</label>
+                <select style={inputStyle} value={editForm.proceso_judicial} onChange={e => setEditForm(f => f && ({ ...f, proceso_judicial: e.target.value }))}>
+                  <option value="">No especificado</option>
+                  <option value="en_proceso">En proceso</option>
+                  <option value="cerrado">Cerrado</option>
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Estado</label>
+                <select style={inputStyle} value={editForm.estado} onChange={e => setEditForm(f => f && ({ ...f, estado: e.target.value }))}>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="aprobado">Aprobado</option>
+                  <option value="rechazado">Rechazado</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={saveEdit}
+                disabled={editSaving}
+                style={{ background: 'linear-gradient(135deg, #be123c, #ec4899)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: editSaving ? 'not-allowed' : 'pointer', opacity: editSaving ? 0.7 : 1, flex: 1 }}
+              >
+                {editSaving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+              <button
+                onClick={() => { setEditingCase(null); setEditForm(null) }}
+                style={{ background: 'transparent', color: '#9d8fad', border: '1px solid #2a2a3a', borderRadius: 8, padding: '10px 20px', fontSize: 14, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
+function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar, isOwner, onEdit, onDelete }: {
   cases: CaseWithValidaciones[]
   rejectMotivo: Record<string, string>
   setRejectMotivo: (fn: (prev: Record<string, string>) => Record<string, string>) => void
   onVotar: (id: string, d: 'aprobado' | 'rechazado') => void
+  isOwner: boolean
+  onEdit: (c: Case) => void
+  onDelete: (id: string) => void
 }) {
   if (!cases.length) return <p style={{ color: '#9d8fad' }} className="text-sm text-center py-12">No hay casos pendientes de validación</p>
 
@@ -249,19 +439,15 @@ function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
                   </div>
                 )}
               </div>
-              {c.foto_url && (
-                <img
-                  src={c.foto_url}
-                  alt={c.nombre}
-                  referrerPolicy="no-referrer"
-                  style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid #2a2a3a' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
-                />
-              )}
-              <div style={{ background: '#0d0d12', border: '1px solid #2a2a3a', borderRadius: 8, padding: '8px 16px', textAlign: 'center', flexShrink: 0 }}>
-                <div style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>{aprobados}</div>
-                <div style={{ color: '#9d8fad', fontSize: 10 }}>de 3</div>
-                {rechazados > 0 && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 2 }}>{rechazados} rechazo{rechazados > 1 ? 's' : ''}</div>}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                {c.foto_url && (
+                  <img src={c.foto_url} alt={c.nombre} referrerPolicy="no-referrer" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', border: '1px solid #2a2a3a' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                )}
+                <div style={{ background: '#0d0d12', border: '1px solid #2a2a3a', borderRadius: 8, padding: '8px 16px', textAlign: 'center' }}>
+                  <div style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>{aprobados}</div>
+                  <div style={{ color: '#9d8fad', fontSize: 10 }}>de 3</div>
+                  {rechazados > 0 && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 2 }}>{rechazados} rechazo{rechazados > 1 ? 's' : ''}</div>}
+                </div>
               </div>
             </div>
 
@@ -290,6 +476,17 @@ function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
                 </div>
               </div>
             )}
+
+            {isOwner && (
+              <div style={{ borderTop: '1px solid #2a2a3a', marginTop: 12, paddingTop: 12 }} className="flex gap-2">
+                <button onClick={() => onEdit(c)} style={{ background: '#3b82f611', color: '#93c5fd', border: '1px solid #3b82f633', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  ✏ Editar
+                </button>
+                <button onClick={() => onDelete(c.id)} style={{ background: '#ef444411', color: '#fca5a5', border: '1px solid #ef444433', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  🗑 Eliminar
+                </button>
+              </div>
+            )}
           </div>
         )
       })}
@@ -297,22 +494,42 @@ function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar }: {
   )
 }
 
-function CasesSection({ cases, onDelete }: { cases: Case[]; onDelete: (id: string) => void }) {
+function CasesSection({ cases, isOwner, onEdit, onDelete }: { cases: Case[]; isOwner: boolean; onEdit: (c: Case) => void; onDelete: (id: string) => void }) {
   if (!cases.length) return <p style={{ color: '#9d8fad' }} className="text-sm text-center py-12">No hay casos en esta categoría</p>
   return (
     <div className="flex flex-col gap-3">
       {cases.map((c) => {
         const color = CASE_TYPE_COLORS[c.tipo]
         return (
-          <div key={c.id} style={{ background: '#1a1a24', border: '1px solid #2a2a3a' }} className="rounded-xl p-5 flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span style={{ background: color + '22', color, border: `1px solid ${color}55` }} className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">{CASE_TYPE_LABELS[c.tipo]}</span>
-                <span style={{ color: '#9d8fad' }} className="text-xs">{c.fecha} · {c.pais}</span>
+          <div key={c.id} style={{ background: '#1a1a24', border: '1px solid #2a2a3a' }} className="rounded-xl p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span style={{ background: color + '22', color, border: `1px solid ${color}55` }} className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">{CASE_TYPE_LABELS[c.tipo]}</span>
+                  <span style={{ color: '#9d8fad' }} className="text-xs">{c.fecha} · {c.pais}{c.ciudad ? `, ${c.ciudad}` : ''}</span>
+                </div>
+                <h3 style={{ color: '#f0eaf5' }} className="font-semibold">{c.nombre}</h3>
+                {c.victima && <p style={{ color: '#c084fc', fontSize: 12, marginTop: 2 }}>Víctima: {c.victima}</p>}
+                {(c as any).proceso_judicial && (
+                  <span style={{ background: (c as any).proceso_judicial === 'cerrado' ? '#22c55e22' : '#f9731622', color: (c as any).proceso_judicial === 'cerrado' ? '#86efac' : '#fdba74', border: `1px solid ${(c as any).proceso_judicial === 'cerrado' ? '#22c55e44' : '#f9731644'}`, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, display: 'inline-block', marginTop: 4 }}>
+                    {(c as any).proceso_judicial === 'cerrado' ? 'Proceso cerrado' : 'En proceso'}
+                  </span>
+                )}
               </div>
-              <h3 style={{ color: '#f0eaf5' }} className="font-semibold">{c.nombre}</h3>
+              {c.foto_url && (
+                <img src={c.foto_url} alt={c.nombre} referrerPolicy="no-referrer" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid #2a2a3a' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+              )}
             </div>
-            <button onClick={() => onDelete(c.id)} style={{ color: '#9d8fad' }} className="text-xs px-3 py-1.5 rounded-full hover:text-red-400 transition-colors flex-shrink-0">Eliminar</button>
+            {isOwner && (
+              <div style={{ borderTop: '1px solid #2a2a3a', marginTop: 12, paddingTop: 12 }} className="flex gap-2">
+                <button onClick={() => onEdit(c)} style={{ background: '#3b82f611', color: '#93c5fd', border: '1px solid #3b82f633', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  ✏ Editar
+                </button>
+                <button onClick={() => onDelete(c.id)} style={{ background: '#ef444411', color: '#fca5a5', border: '1px solid #ef444433', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  🗑 Eliminar
+                </button>
+              </div>
+            )}
           </div>
         )
       })}
@@ -334,7 +551,7 @@ function SolicitudesSection({ solicitudes, onDelete }: { solicitudes: SolicitudM
                 {s.organizacion && ` · ${s.organizacion}`}
               </p>
             </div>
-            <button onClick={() => onDelete(s.id)} style={{ color: '#9d8fad' }} className="text-xs px-2 py-1 rounded hover:text-red-400 transition-colors flex-shrink-0">×</button>
+            <button onClick={() => onDelete(s.id)} style={{ color: '#9d8fad', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }} className="hover:text-red-400 transition-colors flex-shrink-0">×</button>
           </div>
           <p style={{ color: '#9d8fad', fontSize: 12, marginBottom: 6 }}><strong style={{ color: '#e2e8f0' }}>Por qué quiere moderar:</strong> {s.motivo}</p>
           <p style={{ color: '#9d8fad', fontSize: 12 }}><strong style={{ color: '#e2e8f0' }}>Cómo se enteró:</strong> {s.como_se_entero}</p>
