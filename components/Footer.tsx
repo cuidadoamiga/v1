@@ -45,6 +45,7 @@ export default function Footer() {
 
           <nav className="flex flex-wrap gap-x-8 gap-y-3">
             {[
+              { href: '/recursos', label: 'Dónde denunciar' },
               { href: '/como-funciona', label: 'Cómo funciona' },
               { href: '/protocolo', label: 'Protocolo' },
               { href: '/unirse', label: 'Unirse' },

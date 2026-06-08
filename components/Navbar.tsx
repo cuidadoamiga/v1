@@ -35,6 +35,13 @@ export default function Navbar() {
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-4">
             <Link
+              href="/recursos"
+              style={{ color: 'var(--text-secondary)' }}
+              className="text-sm hover:text-gray-900 transition-colors"
+            >
+              Dónde denunciar
+            </Link>
+            <Link
               href="/como-funciona"
               style={{ color: 'var(--text-secondary)' }}
               className="text-sm hover:text-gray-900 transition-colors"
@@ -114,6 +121,14 @@ export default function Navbar() {
           }}
           className="md:hidden sticky top-14 z-40 flex flex-col"
         >
+          <Link
+            href="/recursos"
+            onClick={() => setOpen(false)}
+            style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border)' }}
+            className="px-6 py-4 text-sm font-medium"
+          >
+            Dónde denunciar
+          </Link>
           <Link
             href="/como-funciona"
             onClick={() => setOpen(false)}
