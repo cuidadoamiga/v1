@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { COUNTRIES } from '@/types'
 
 async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
@@ -84,12 +83,21 @@ export default function NewCasePage() {
       proceso_judicial: form.proceso_judicial || null,
       lat: coords.lat,
       lng: coords.lng,
-      estado: 'pendiente',
     }
-    const { error: err } = await supabase.from('cases').insert(payload as any)
 
-    if (err) {
-      setError('Error al enviar el caso. Por favor intentá de nuevo.')
+    const res = await fetch('/api/cases', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 429) {
+        setError('Demasiados envíos. Esperá unos minutos.')
+      } else {
+        setError(data.error || 'Error al enviar el caso. Por favor intentá de nuevo.')
+      }
     } else {
       setSuccess(true)
     }
