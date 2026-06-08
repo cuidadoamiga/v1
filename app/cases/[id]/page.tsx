@@ -92,6 +92,11 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                 <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">
                   {c.nombre}
                 </h1>
+                {(c as any).victima && (
+                  <p style={{ color: '#9333ea', fontSize: 13, marginTop: 4, fontWeight: 500 }}>
+                    Víctima: {(c as any).victima}
+                  </p>
+                )}
                 <p style={{ color: 'var(--text-secondary)' }} className="text-sm mt-1">
                   {c.fecha} · {countryName}
                 </p>
