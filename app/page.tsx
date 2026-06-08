@@ -69,6 +69,7 @@ const DEMO_CASES: Case[] = [
 export default function HomePage() {
   const [cases, setCases] = useState<Case[]>([])
   const [filtered, setFiltered] = useState<Case[]>([])
+  const [hasSearched, setHasSearched] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
   const [pendingTypes, setPendingTypes] = useState<CaseType[]>(['femicidio', 'abuso', 'acoso'])
   const [selectedCountry, setSelectedCountry] = useState('')
@@ -117,6 +118,7 @@ export default function HomePage() {
     setSelectedTypes(pendingTypes)
     setSelectedCountry(pendingCountry)
     setSelectedCity(pendingCity)
+    setHasSearched(true)
   }
 
   return (
@@ -128,12 +130,53 @@ export default function HomePage() {
           style={{ background: '#fef9c3', borderBottom: '1px solid #fde047', color: '#854d0e' }}
           className="text-center text-xs py-2 px-4"
         >
-          Mostrando datos de demo — configurá Supabase en <code>.env.local</code> para ver casos reales
+          Mostrando datos de demo
         </div>
       )}
 
-      {/* Mapa + sidebar — altura fija */}
-      <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
+      {/* ── MOBILE layout ── */}
+      <div className="md:hidden flex flex-col">
+        {/* Mapa 4:5 */}
+        <div style={{ aspectRatio: '4/5', width: '100%', position: 'relative' }}>
+          <MapView cases={filtered} />
+        </div>
+
+        {/* Filtros */}
+        <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }} className="p-4">
+          <Filters
+            selectedTypes={pendingTypes}
+            selectedCountry={pendingCountry}
+            selectedCity={pendingCity}
+            onTypeChange={setPendingTypes}
+            onCountryChange={setPendingCountry}
+            onCityChange={setPendingCity}
+            onSearch={handleSearch}
+          />
+        </div>
+
+        {/* Casos — solo si buscó */}
+        {hasSearched && (
+          <div className="p-4 flex flex-col gap-3">
+            <p style={{ color: 'var(--text-secondary)' }} className="text-xs px-1">
+              {filtered.length} {filtered.length === 1 ? 'caso' : 'casos'} encontrados
+            </p>
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }} className="rounded-xl h-20 animate-pulse" />
+              ))
+            ) : filtered.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }} className="text-sm text-center py-6">
+                No hay casos con los filtros seleccionados
+              </p>
+            ) : (
+              filtered.map((c) => <CaseCard key={c.id} c={c} />)
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── DESKTOP layout ── */}
+      <div className="hidden md:flex overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
         <aside
           style={{
             background: 'var(--bg-secondary)',
@@ -178,7 +221,7 @@ export default function HomePage() {
         </main>
       </div>
 
-      {/* FAQ y Footer con scroll normal */}
+      {/* FAQ y Footer */}
       <FAQ />
       <Footer />
     </div>
