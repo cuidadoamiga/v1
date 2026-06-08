@@ -622,7 +622,7 @@ function CreateCaseSection({ onCreated }: { onCreated: () => void }) {
 
   return (
     <div style={{ background: '#1a1a24', border: '1px solid #2a2a3a', borderRadius: 16, padding: 24 }}>
-      <p style={{ color: '#9d8fad', fontSize: 12, marginBottom: 20, background: '#9333ea18', border: '1px solid #9333ea33', borderRadius: 8, padding: '8px 12px', color: '#c084fc' }}>
+      <p style={{ color: '#c084fc', fontSize: 12, marginBottom: 20, background: '#9333ea18', border: '1px solid #9333ea33', borderRadius: 8, padding: '8px 12px' }}>
         Los casos creados desde aquí se publican directamente en el mapa.
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
