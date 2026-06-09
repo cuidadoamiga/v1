@@ -6,7 +6,8 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
   { key: 'X-XSS-Protection', value: '1; mode=block' },
-  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+  // HSTS removido: causa ERR_CERT_AUTHORITY_INVALID en redes con portal cautivo
+  // Vercel ya maneja HTTPS automáticamente
 ]
 
 const nextConfig: NextConfig = {
