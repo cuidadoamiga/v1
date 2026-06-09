@@ -1,7 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Rate limiting simple: máx 5 envíos por IP cada 10 minutos
+// TODO(security): Este rate limit vive en memoria del proceso Node.js.
+// En Vercel (serverless), cada instancia tiene su propia memoria, por lo que
+// el límite se resetea entre invocaciones y no es efectivo bajo carga real.
+// Solución correcta: reemplazar con Upstash Redis + @upstash/ratelimit
+// Ejemplo: https://github.com/upstash/ratelimit
+// Por ahora funciona como primera línea de defensa básica.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
 function isRateLimited(ip: string): boolean {

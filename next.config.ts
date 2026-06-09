@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
       headers: securityHeaders,
     },
   ],
+  images: {
+    // Dominios permitidos para next/image (ítem 19)
+    // Agregá aquí los dominios de donde vienen las imágenes de casos
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.cloudinary.com' },
+      { protocol: 'https', hostname: '**.wikipedia.org' },
+      { protocol: 'https', hostname: '**.wikimedia.org' },
+      { protocol: 'https', hostname: '**.githubusercontent.com' },
+    ],
+  },
 }
 
 export default nextConfig;

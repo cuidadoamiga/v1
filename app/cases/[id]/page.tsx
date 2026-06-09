@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { UserCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Case, CASE_TYPE_COLORS, CASE_TYPE_LABELS, COUNTRIES, CountryCode } from '@/types'
 
@@ -71,11 +72,10 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 28,
                     flexShrink: 0,
                   }}
                 >
-                  🌸
+                  <UserCircle size={32} color="#9d8fad" />
                 </div>
               )}
               <div>

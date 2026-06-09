@@ -33,7 +33,10 @@ export default function MapView({ cases }: MapViewProps) {
     if (!mapRef.current || mapInstanceRef.current) return
 
     // Leaflet solo funciona en browser
-    import('leaflet').then((L) => {
+    Promise.all([
+      import('leaflet'),
+      import('leaflet.markercluster'),
+    ]).then(([L]) => {
       // Fix default icon paths
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -53,7 +56,15 @@ export default function MapView({ cases }: MapViewProps) {
         maxZoom: 18,
       }).addTo(map)
 
-      mapInstanceRef.current = { map, L }
+      // Cluster group para agrupar pines cercanos
+      const clusterGroup = (L as any).markerClusterGroup({
+        maxClusterRadius: 40,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+      })
+      map.addLayer(clusterGroup)
+
+      mapInstanceRef.current = { map, L, clusterGroup }
     })
 
     return () => {
@@ -66,9 +77,14 @@ export default function MapView({ cases }: MapViewProps) {
 
   useEffect(() => {
     if (!mapInstanceRef.current) return
-    const { map, L } = mapInstanceRef.current
+    const { L, clusterGroup } = mapInstanceRef.current
 
-    markersRef.current.forEach((m) => m.remove())
+    // Limpiar marcadores previos del cluster
+    if (clusterGroup) {
+      clusterGroup.clearLayers()
+    } else {
+      markersRef.current.forEach((m) => m.remove())
+    }
     markersRef.current = []
 
     cases.forEach((c) => {
@@ -81,7 +97,6 @@ export default function MapView({ cases }: MapViewProps) {
       })
 
       const marker = L.marker([c.lat, c.lng], { icon })
-        .addTo(map)
         .bindPopup(`
           <div style="font-family: Inter, system-ui, sans-serif; min-width: 160px; padding: 4px;">
             <span style="
@@ -109,6 +124,12 @@ export default function MapView({ cases }: MapViewProps) {
           </div>
         `)
 
+      if (clusterGroup) {
+        clusterGroup.addLayer(marker)
+      } else {
+        const { map } = mapInstanceRef.current
+        marker.addTo(map)
+      }
       markersRef.current.push(marker)
     })
   }, [cases])
@@ -124,10 +145,9 @@ export default function MapView({ cases }: MapViewProps) {
         }
         .leaflet-popup-tip { background: white !important; }
       `}</style>
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
       <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: 12 }} />
     </>
   )
