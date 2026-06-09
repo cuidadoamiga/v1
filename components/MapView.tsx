@@ -26,13 +26,16 @@ function makeIcon(color: string) {
 
 export default function MapView({ cases }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersRef = useRef<any[]>([])
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
     import('leaflet').then((L) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',

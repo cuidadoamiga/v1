@@ -139,6 +139,7 @@ export default function AdminPage() {
       moderadora_id: userId,
       decision,
       motivo_rechazo: decision === 'rechazado' ? (rejectMotivo[caseId] || null) : null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     const { data: allVotos } = await supabase.from('validaciones').select('*').eq('caso_id', caseId)
@@ -201,6 +202,7 @@ export default function AdminPage() {
       fuentes: editForm.fuentes.split('\n').map(s => s.trim()).filter(Boolean),
       proceso_judicial: editForm.proceso_judicial || null,
       estado: editForm.estado,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any).eq('id', editingCase.id)
 
     if (error) {

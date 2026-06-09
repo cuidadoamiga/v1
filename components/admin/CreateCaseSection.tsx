@@ -63,6 +63,7 @@ export function CreateCaseSection({ onCreated }: Props) {
       lat: coords.lat,
       lng: coords.lng,
       estado: 'aprobado',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     if (error) {
