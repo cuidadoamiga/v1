@@ -15,6 +15,7 @@ export default function CaseCard({ c }: { c: Case }) {
       >
         <div className="flex items-start gap-3">
           {c.foto_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={c.foto_url}
               alt={c.nombre}
@@ -63,9 +64,9 @@ export default function CaseCard({ c }: { c: Case }) {
             >
               {c.nombre}
             </h3>
-            {(c as any).victima && (
+            {c.victima && (
               <p style={{ color: '#9333ea', fontSize: 11, marginTop: 1 }} className="truncate">
-                Víctima: {(c as any).victima}
+                Víctima: {c.victima}
               </p>
             )}
             <p style={{ color: 'var(--text-secondary)' }} className="text-xs mt-0.5">

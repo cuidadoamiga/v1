@@ -96,7 +96,7 @@ export default function MapView({ cases }: MapViewProps) {
               margin-bottom: 6px;
             ">${CASE_TYPE_LABELS[c.tipo]}</span>
             <div style="font-weight: 700; font-size: 14px; color: #1a202c; margin-bottom: 2px;">${c.nombre}</div>
-            ${(c as any).victima ? `<div style="font-size: 12px; color: #9333ea; margin-bottom: 2px;">Víctima: ${(c as any).victima}</div>` : ''}
+            ${c.victima ? `<div style="font-size: 12px; color: #9333ea; margin-bottom: 2px;">Víctima: ${c.victima}</div>` : ''}
             <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${c.fecha} · ${c.pais}</div>
             <a href="/cases/${c.id}" style="
               color: ${color};

@@ -26,13 +26,14 @@ export function CasesSection({ cases, isOwner, onEdit, onDelete }: Props) {
                 </div>
                 <h3 style={{ color: '#f0eaf5' }} className="font-semibold">{c.nombre}</h3>
                 {c.victima && <p style={{ color: '#c084fc', fontSize: 12, marginTop: 2 }}>Víctima: {c.victima}</p>}
-                {(c as any).proceso_judicial && (
-                  <span style={{ background: (c as any).proceso_judicial === 'cerrado' ? '#22c55e22' : '#f9731622', color: (c as any).proceso_judicial === 'cerrado' ? '#86efac' : '#fdba74', border: `1px solid ${(c as any).proceso_judicial === 'cerrado' ? '#22c55e44' : '#f9731644'}`, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, display: 'inline-block', marginTop: 4 }}>
-                    {(c as any).proceso_judicial === 'cerrado' ? 'Proceso cerrado' : 'En proceso'}
+                {c.proceso_judicial && (
+                  <span style={{ background: c.proceso_judicial === 'cerrado' ? '#22c55e22' : '#f9731622', color: c.proceso_judicial === 'cerrado' ? '#86efac' : '#fdba74', border: `1px solid ${c.proceso_judicial === 'cerrado' ? '#22c55e44' : '#f9731644'}`, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, display: 'inline-block', marginTop: 4 }}>
+                    {c.proceso_judicial === 'cerrado' ? 'Proceso cerrado' : 'En proceso'}
                   </span>
                 )}
               </div>
               {c.foto_url && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={c.foto_url} alt={c.nombre} referrerPolicy="no-referrer" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid #2a2a3a' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
               )}
             </div>

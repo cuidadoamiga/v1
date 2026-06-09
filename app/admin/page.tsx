@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
+import Link from 'next/link'
 import { Case, Validacion, SolicitudModeradora, COUNTRIES } from '@/types'
 import { ValidarSection } from '@/components/admin/ValidarSection'
 import { CasesSection } from '@/components/admin/CasesSection'
@@ -50,6 +51,7 @@ export default function AdminPage() {
 
   // isOwner se setea via moderators table en el useEffect de auth
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data }) => {
@@ -126,6 +128,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (userId) fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, tab])
 
   async function votar(caseId: string, decision: 'aprobado' | 'rechazado') {
@@ -169,7 +172,7 @@ export default function AdminPage() {
     setEditingCase(c)
     setEditForm({
       nombre: c.nombre || '',
-      victima: (c as any).victima || '',
+      victima: c.victima || '',
       fecha: c.fecha || '',
       tipo: c.tipo || 'femicidio',
       pais: c.pais || '',
@@ -177,7 +180,7 @@ export default function AdminPage() {
       descripcion: c.descripcion || '',
       foto_url: c.foto_url || '',
       fuentes: Array.isArray(c.fuentes) ? c.fuentes.join('\n') : '',
-      proceso_judicial: (c as any).proceso_judicial || '',
+      proceso_judicial: c.proceso_judicial || '',
       estado: c.estado || 'pendiente',
     })
   }
@@ -272,9 +275,9 @@ export default function AdminPage() {
           >
             Salir
           </button>
-          <a href="/" style={{ color: '#9d8fad' }} className="text-sm hover:text-white">
+          <Link href="/" style={{ color: '#9d8fad' }} className="text-sm hover:text-white">
             Ver mapa →
-          </a>
+          </Link>
         </div>
       </nav>
 

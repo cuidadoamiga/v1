@@ -45,6 +45,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
         >
           {c.foto_url && (
             <div className="relative h-64 w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={c.foto_url}
                 alt={c.nombre}
@@ -92,9 +93,9 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                 <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">
                   {c.nombre}
                 </h1>
-                {(c as any).victima && (
+                {c.victima && (
                   <p style={{ color: '#9333ea', fontSize: 13, marginTop: 4, fontWeight: 500 }}>
-                    Víctima: {(c as any).victima}
+                    Víctima: {c.victima}
                   </p>
                 )}
                 <p style={{ color: 'var(--text-secondary)' }} className="text-sm mt-1">
