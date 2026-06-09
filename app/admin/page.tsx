@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { Case, Validacion, SolicitudModeradora, CASE_TYPE_COLORS, CASE_TYPE_LABELS, COUNTRIES } from '@/types'
 
-const OWNER_EMAIL = 'sofiajuredare@gmail.com'
+const OWNER_EMAIL = 'cuidadoamiga@proton.me'
 
 type Tab = 'validar' | 'pendiente' | 'aprobado' | 'rechazado' | 'solicitudes' | 'crear'
 
