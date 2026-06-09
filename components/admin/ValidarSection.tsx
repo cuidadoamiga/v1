@@ -56,10 +56,8 @@ export function ValidarSection({ cases, rejectMotivo, setRejectMotivo, onVotar, 
                 )}
               </div>
               <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                {c.foto_url && (
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.foto_url ?? ''} alt={c.nombre} referrerPolicy="no-referrer" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', border: '1px solid #2a2a3a' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {c.foto_url && <img src={c.foto_url} alt={c.nombre} referrerPolicy="no-referrer" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', border: '1px solid #2a2a3a' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />}
                 <div style={{ background: '#0d0d12', border: '1px solid #2a2a3a', borderRadius: 8, padding: '8px 16px', textAlign: 'center' }}>
                   <div style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>{aprobados}</div>
                   <div style={{ color: '#9d8fad', fontSize: 10 }}>de 3</div>
