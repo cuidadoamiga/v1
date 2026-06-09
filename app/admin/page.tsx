@@ -51,7 +51,6 @@ export default function AdminPage() {
 
   // isOwner se setea via moderators table en el useEffect de auth
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data }) => {
@@ -76,7 +75,7 @@ export default function AdminPage() {
         setIsOwner((data.user.email ?? '') === OWNER_EMAIL_FALLBACK)
       }
     })
-  }, [])
+  }, [router])
 
   async function logout() {
     const supabase = createClient()
